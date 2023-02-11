@@ -139,6 +139,8 @@ crictl_supported_versions:
   v1.22: "v1.22.0"
 crictl_version: "{{ crictl_supported_versions[kube_major_version] }}"
 
+yq_version: "v4.27.5"
+
 # Download URLs
 kubelet_download_url: "https://storage.googleapis.com/kubernetes-release/release/{{ kube_version }}/bin/linux/{{ image_arch }}/kubelet"
 kubectl_download_url: "https://storage.googleapis.com/kubernetes-release/release/{{ kube_version }}/bin/linux/{{ image_arch }}/kubectl"
@@ -161,6 +163,7 @@ nerdctl_download_url: "https://github.com/containerd/nerdctl/releases/download/v
 krew_download_url: "https://github.com/kubernetes-sigs/krew/releases/download/{{ krew_version }}/krew-{{ host_os }}_{{ image_arch }}.tar.gz"
 containerd_download_url: "https://github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{ containerd_version }}-linux-{{ image_arch }}.tar.gz"
 cri_dockerd_download_url: "https://github.com/Mirantis/cri-dockerd/releases/download/v{{ cri_dockerd_version }}/cri-dockerd-{{ cri_dockerd_version }}.{{ image_arch }}.tgz"
+yq_download_url: "https://github.com/mikefarah/yq/releases/download/{{ yq_version }}/yq_linux_{{ image_arch }}"
 
 crictl_checksums:
   arm:
@@ -927,11 +930,16 @@ containerd_archive_checksums:
     1.6.7: 0db5cb6d5dd4f3b7369c6945d2ec29a9c10b106643948e3224e53885f56863a9
     1.6.8: f18769721f614828f6b778030c72dc6969ce2108f2363ddc85f6c7a147df0fb8
 
+yq_checksums:
+  amd64:
+    v4.27.5: 9a54846e81720ae22814941905cd3b056ebdffb76bf09acffa30f5e90b22d615
+
 etcd_binary_checksum: "{{ etcd_binary_checksums[image_arch][etcd_version] }}"
 cni_binary_checksum: "{{ cni_binary_checksums[image_arch][cni_version] }}"
 kubelet_binary_checksum: "{{ kubelet_checksums[image_arch][kube_version] }}"
 kubectl_binary_checksum: "{{ kubectl_checksums[image_arch][kube_version] }}"
 kubeadm_binary_checksum: "{{ kubeadm_checksums[image_arch][kubeadm_version] }}"
+yq_binary_checksum: "{{ yq_checksums[image_arch][yq_version] }}"
 calicoctl_binary_checksum: "{{ calicoctl_binary_checksums[image_arch][calico_ctl_version] }}"
 calico_crds_archive_checksum: "{{ calico_crds_archive_checksums[calico_version] }}"
 crictl_binary_checksum: "{{ crictl_checksums[image_arch][crictl_version] }}"
@@ -1817,6 +1825,19 @@ downloads:
     repo: "{{ metallb_controller_image_repo }}"
     tag: "{{ metallb_version }}"
     sha256: "{{ metallb_controller_digest_checksum|default(None) }}"
+    groups:
+    - kube_control_plane
+
+  yq:
+    enabled: "{{ argocd_enabled }}"
+    file: true
+    version: "{{ yq_version }}"
+    dest: "{{ local_release_dir }}/yq"
+    sha256: "{{ yq_binary_checksum|default(None) }}"
+    url: "{{ yq_download_url }}"
+    unarchive: false
+    owner: "root"
+    mode: "0755"
     groups:
     - kube_control_plane
 
